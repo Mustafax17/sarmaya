@@ -1,0 +1,18 @@
+{
+  "name": "sarmaya",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sarmaya — assumption-free, multi-currency personal finance app",
+  "type": "module",
+  "scripts": {
+    "install:all": "npm install && npm --prefix server install && npm --prefix client install",
+    "migrate": "npm --prefix server run migrate",
+    "seed": "npm --prefix server run seed",
+    "dev": "concurrently -n server,client -c blue,magenta \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "build": "npm --prefix client run build",
+    "start": "npm --prefix server start"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
