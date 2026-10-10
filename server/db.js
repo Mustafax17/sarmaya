@@ -1,4 +1,3 @@
-import { createClient } from "@libsql/client";
 import fs from "node:fs";
 import path from "node:path";
 import { config } from "./config.js";
@@ -9,6 +8,10 @@ import { config } from "./config.js";
 const isLocalFile = config.dbUrl.startsWith("file:");
 if (isLocalFile) fs.mkdirSync(path.dirname(config.dbPath), { recursive: true });
 
+// Only a local file needs the native SQLite binding. A remote database uses the
+// pure-JS HTTP client, so the serverless bundle never has to load a per-platform
+// native module.
+const { createClient } = isLocalFile ? await import("@libsql/client") : await import("@libsql/client/web");
 const client = createClient({ url: config.dbUrl, authToken: config.dbAuthToken });
 
 // Rows come back as plain objects keyed by column name, like better-sqlite3 gave.

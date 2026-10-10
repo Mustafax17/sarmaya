@@ -6,10 +6,18 @@ dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Vercel sets VERCEL=1 in every deployment (production and preview).
+const onVercel = Boolean(process.env.VERCEL);
+
 // JWT_SECRET is mandatory. No default fallback — a predictable secret would let
 // anyone forge sessions. Fail loud and early instead of running insecurely.
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET || JWT_SECRET === "replace-me-with-a-long-random-string" || JWT_SECRET.length < 16) {
+  // On Vercel, throw instead of exiting: api/index.js turns it into a readable
+  // JSON error rather than a bare FUNCTION_INVOCATION_FAILED.
+  if (onVercel) {
+    throw new Error("[sarmaya] JWT_SECRET is missing or too weak (min 16 chars). Set it in the Vercel project's Environment Variables.");
+  }
   console.error(
     "\n[sarmaya] FATAL: JWT_SECRET is missing or too weak.\n" +
       "Create server/.env from server/.env.example and set a long random JWT_SECRET.\n" +
@@ -17,9 +25,6 @@ if (!JWT_SECRET || JWT_SECRET === "replace-me-with-a-long-random-string" || JWT_
   );
   process.exit(1);
 }
-
-// Vercel sets VERCEL=1 in every deployment (production and preview).
-const onVercel = Boolean(process.env.VERCEL);
 
 // A serverless function's disk is read-only and wiped between invocations, so a
 // local SQLite file would silently lose every write. Require the hosted database.
